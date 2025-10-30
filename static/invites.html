@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>收到的邀请</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      height: 100%;
+      background-color: #f5f7fa;
+    }
+    .layout { display: flex; height: 100vh; flex-direction: column; }
+
+    header {
+      height: 50px;
+      background-color: #2d3a4b;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 16px;
+    }
+    header .left { font-weight: bold; }
+    header .right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+    header .right button.logout-btn {
+      background-color: white;
+      color: black;
+      border-radius: 4px;
+      padding: 6px 12px;
+      border: none;
+      cursor: pointer;
+    }
+    header .right button.logout-btn:hover {
+      background-color: #f0f0f0;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+    }
+    nav.sidebar { 
+      width: 220px; 
+      background: #2d3a4b; 
+      color: #fff; 
+      padding-top: 20px; 
+    }
+    nav.sidebar a {
+      display: block;
+      color: #b0bec5;
+      padding: 12px 30px;
+      text-decoration: none;
+      position: relative;
+    }
+    nav.sidebar a:hover, nav.sidebar a.active {
+      background-color: #409eff;
+      color: white;
+    }
+
+    /* 左侧导航未读红点 */
+    /* 左侧导航未读红点，改大改圆润 */
+    nav.sidebar a.unread-indicator::after {
+      content: '';
+      position: absolute;
+      top: 12px;       /* 稍微往上调一点 */
+      right: 16px;     /* 靠右一点 */
+      width: 14px;     /* 变大 */
+      height: 14px;    /* 变大 */
+      background-color: #f56c6c;
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(245, 108, 108, 0.9);
+      border: 2px solid white; /* 加个白色边框，更立体 */
+    }
+
+
+    .content {
+      flex: 1;
+      padding: 40px 60px 100px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .invite-card {
+      position: relative;
+      background-color: white;
+      border-radius: 12px;
+      padding: 24px 28px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+      margin-bottom: 5px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: background-color 0.2s ease;
+    }
+    .invite-card:hover {
+      background-color: #f0f8ff;
+    }
+
+    .invite-content {
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .invite-title {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    .invite-organizer {
+      color: #666;
+      margin-bottom: 8px;
+    }
+    .invite-desc {
+      font-size: 14px;
+      color: #444;
+    }
+
+    .status-tag {
+      font-size: 12px;
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 12px;
+      position: absolute;
+      top: 14px;
+      right: 20px;
+      color: white;
+    }
+    .status-unread {
+      background-color: #f56c6c;
+    }
+    .status-read {
+      background-color: #67c23a;
+    }
+
+    /*!* 新增时间样式 *!*/
+    /*.invite-time {*/
+    /*  padding: 0 28px 20px 28px;*/
+    /*  font-size: 12px;*/
+    /*  color: #999;*/
+    /*  margin-bottom: 20px;*/
+    /*  user-select: none;*/
+    /*}*/
+    .invite-time {
+  margin-top: auto;  /* 关键：将它推到底部 */
+  padding: 0 28px 20px 28px;
+  font-size: 12px;
+  color: #999;
+  user-select: none;
+}
+
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    .modal.active { display: flex; }
+    .modal-box {
+      background-color: white;
+      border-radius: 10px;
+      padding: 30px;
+      width: 480px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+    }
+    .modal-box h2 {
+      margin-bottom: 12px;
+      font-size: 22px;
+    }
+    .modal-box p {
+      margin: 10px 0;
+      color: #333;
+    }
+    .modal-actions {
+      text-align: right;
+      margin-top: 20px;
+    }
+    .modal-actions button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      margin-left: 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .accept-btn {
+      background-color: #67c23a;
+      color: white;
+    }
+    .reject-btn {
+      background-color: #f56c6c;
+      color: white;
+    }
+
+    .footer-buttons {
+      position: fixed;
+      right: 40px;
+      bottom: 20px;
+      z-index: 1000;
+    }
+    .footer-buttons button {
+      margin-left: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #409eff;
+      color: white;
+    }
+    .footer-buttons button:hover {
+      background-color: #2b8cd7;
+    }
+#toggleDeleteModeBtn {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  background-color: #f56c6c;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 1000;
+}
+
+#confirmDeleteBtn {
+  position: fixed;
+  right: 140px; /* 向左偏移 */
+  bottom: 20px;
+  background-color: #67c23a;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 1000;
+  display: none;
+}
+
+#cancelDeleteBtn {
+  position: fixed;
+  right: 30px; /* 确认按钮和取消按钮横向间隔 */
+  bottom: 20px;
+  background-color: #f56c6c;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 1000;
+  display: none;
+}
+  /* 多选框左侧对齐 */
+  .invite-card {
+    display: flex;
+    align-items: flex-start;
+  }
+  .invite-card input[type="checkbox"] {
+    margin-right: 12px;
+    margin-top: 8px;
+    flex-shrink: 0;
+  }
+  .invite-content {
+    flex-grow: 1;
+    cursor: pointer;
+  }
+
+  </style>
+</head>
+
+
+
+<body>
+<div class="layout">
+  <header>
+    <div class="left">演讲系统</div>
+    <div class="right">
+      <div id="userGreeting">你好！用户</div>
+      <button onclick="logout()" class="logout-btn">退出登录</button>
+    </div>
+  </header>
+  <div class="main">
+    <nav class="sidebar" id="sidebarNav">
+      <a href="#" onclick="goToPersonal()">个人主页</a>
+      <!-- 你的导航链接动态加载逻辑不变 -->
+    </nav>
+    <div class="content">
+      <div id="inviteList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 右下角删除邀请按钮 -->
+<button id="toggleDeleteModeBtn" onclick="toggleDeleteMode()">删除邀请</button>
+<button id="confirmDeleteBtn" onclick="deleteSelectedInvites()">确认</button>
+<button id="cancelDeleteBtn" onclick="cancelDeleteMode()">取消</button>
+
+<!-- 弹出框 -->
+<div class="modal" id="inviteModal">
+  <div class="modal-box">
+    <h2 id="modalTitle">演讲标题</h2>
+    <p><strong>组织者：</strong><span id="modalOrganizer"></span></p>
+    <p><strong>简介：</strong><span id="modalDescription"></span></p>
+    <div class="modal-actions">
+      <button class="reject-btn" id="rejectBtn" onclick="updateInviteStatus(-1)">拒绝演讲</button>
+      <button class="accept-btn" id="acceptBtn" onclick="updateInviteStatus(1)">接受演讲</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let userId = sessionStorage.getItem("userId");
+  let invites = [];
+  let currentInvite = null;
+  let username = '用户';
+
+  // 用于保存选中状态，key 是邀请id，value 是true/false
+  let selectedInvites = {};
+
+  // 多选模式标志，默认关闭
+  let deleteMode = false;
+
+  function goToPersonal() {
+    const userId = sessionStorage.getItem("userId");
+    if (userId) {
+      window.location.href = `person.html?id=${userId}`;
+    } else {
+      alert("未登录，无法访问个人主页");
+    }
+  }
+
+  async function fetchUsername(userId) {
+    const res = await fetch(`/user/${encodeURIComponent(userId)}`);
+    if (!res.ok) throw new Error('获取用户信息失败');
+    const data = await res.json();
+    return data.username || '用户';
+  }
+
+  async function fetchLecture(lectureId) {
+    const res = await fetch(`/lecture/${encodeURIComponent(lectureId)}`);
+    if (!res.ok) throw new Error('获取演讲详情失败');
+    return await res.json();
+  }
+
+  async function fetchInvites() {
+    try {
+      const res = await fetch(`/invitation/byspeaker/${encodeURIComponent(userId)}`);
+      if (!res.ok) throw new Error('请求邀请失败');
+      const invitations = await res.json();
+
+      const detailedInvites = await Promise.all(invitations.map(async invite => {
+        const lecture = await fetchLecture(invite.lecture_id);
+        return {
+          id: invite.id,
+          lecture_id: invite.lecture_id,
+          title: lecture.topic || '无标题',
+          desc: lecture.description || '',
+          organizer: username,
+          time: lecture.start_time ? new Date(lecture.start_time).toLocaleString() : '未知时间',
+          status: invite.status
+        };
+      }));
+
+      invites = detailedInvites;
+
+      // 清空已选状态，重新渲染
+      selectedInvites = {};
+      renderInvites();
+
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  function renderInvites() {
+    const container = document.getElementById('inviteList');
+    container.innerHTML = '';
+    const readStatus = JSON.parse(localStorage.getItem('readInvites') || '{}');
+
+    invites.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+
+    invites.forEach(invite => {
+      const isRead = readStatus[invite.id] === true;
+      const isChecked = !!selectedInvites[invite.id];
+
+      // 多选模式时显示checkbox，否则不显示
+      const checkboxHTML = deleteMode
+        ? `<input type="checkbox" onchange="toggleSelectInvite(event, '${invite.id}')" ${isChecked ? 'checked' : ''} />`
+        : '';
+
+      const card = document.createElement('div');
+      card.className = 'invite-card';
+      card.setAttribute('data-id', invite.id);
+
+      card.innerHTML = `
+        ${checkboxHTML}
+        <div class="invite-content" onclick="${deleteMode ? 'void(0)' : `showDetails('${invite.id}')`}">
+          <div class="invite-title">${invite.title}</div>
+          <div class="invite-organizer">演讲者：${invite.organizer}</div>
+          <div class="invite-desc">${invite.desc}</div>
+          <div class="invite-status">状态：${invite.status === 0 ? '待回应' : invite.status === 1 ? '已接受' : '已拒绝'}</div>
+          <div class="invite-time">邀请时间：${invite.time}</div>
+        </div>
+        <span class="status-tag ${isRead ? 'status-read' : 'status-unread'}">${isRead ? '已读' : '未读'}</span>
+      `;
+      container.appendChild(card);
+    });
+
+    updateSidebarUnread();
+  }
+
+  function toggleSelectInvite(e, id) {
+    e.stopPropagation(); // 防止触发 showDetails
+    selectedInvites[id] = e.target.checked;
+  }
+
+  function showDetails(id) {
+    if (deleteMode) return; // 多选模式下不响应点击详情
+    const invite = invites.find(i => i.id === id);
+    if (!invite) return;
+
+    currentInvite = invite;
+
+    document.getElementById('modalTitle').textContent = invite.title;
+    document.getElementById('modalOrganizer').textContent = invite.organizer;
+    document.getElementById('modalDescription').textContent = invite.desc;
+    document.getElementById('inviteModal').classList.add('active');
+
+    // 控制按钮状态
+    document.getElementById('acceptBtn').disabled = invite.status === 1;
+    document.getElementById('rejectBtn').disabled = invite.status === 1;
+
+    const readStatus = JSON.parse(localStorage.getItem('readInvites') || '{}');
+    readStatus[invite.id] = true;
+    localStorage.setItem('readInvites', JSON.stringify(readStatus));
+
+    renderInvites();
+  }
+
+  async function updateInviteStatus(status) {
+    if (!currentInvite) return;
+
+    const payload = {
+      lecture_id: currentInvite.lecture_id,
+      speaker_id: userId,
+      status: status
+    };
+
+    try {
+      let url = '';
+      if (status === 1) {
+        url = `/invitation/accept/${encodeURIComponent(currentInvite.id)}`;
+      } else {
+        url = `/invitation/${encodeURIComponent(currentInvite.id)}`;
+      }
+
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error('更新失败');
+      alert(status === 1 ? '你已接受邀请' : '你已拒绝邀请');
+      document.getElementById('inviteModal').classList.remove('active');
+      currentInvite = null;
+      await fetchInvites();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  // 切换多选模式
+  function toggleDeleteMode() {
+    deleteMode = true;
+    selectedInvites = {};
+    renderInvites();
+
+    document.getElementById('toggleDeleteModeBtn').style.display = 'none';
+    document.getElementById('confirmDeleteBtn').style.display = 'inline-block';
+    document.getElementById('cancelDeleteBtn').style.display = 'inline-block';
+  }
+
+  // 取消多选模式
+  function cancelDeleteMode() {
+    deleteMode = false;
+    selectedInvites = {};
+    renderInvites();
+
+    document.getElementById('toggleDeleteModeBtn').style.display = 'inline-block';
+    document.getElementById('confirmDeleteBtn').style.display = 'none';
+    document.getElementById('cancelDeleteBtn').style.display = 'none';
+  }
+
+  async function deleteSelectedInvites() {
+    const idsToDelete = Object.entries(selectedInvites)
+      .filter(([id, checked]) => checked)
+      .map(([id]) => id);
+
+    if (idsToDelete.length === 0) {
+      alert('请先选择要删除的邀请');
+      return;
+    }
+
+    if (!confirm(`确认删除选中的 ${idsToDelete.length} 条邀请吗？此操作不可撤销。`)) {
+      return;
+    }
+
+    try {
+      for (const id of idsToDelete) {
+        const res = await fetch(`/invitation/${encodeURIComponent(id)}`, {
+          method: 'DELETE'
+        });
+        if (!res.ok) {
+          throw new Error(`删除邀请 ${id} 失败`);
+        }
+      }
+      alert('删除成功');
+      cancelDeleteMode(); // 删除成功后退出多选模式并刷新列表
+      await fetchInvites();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  function logout() {
+    if (confirm('确认退出登录？')) {
+      window.location.href = 'login.html';
+    }
+  }
+
+  document.getElementById('inviteModal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('active');
+  });
+
+  function updateSidebarUnread() {
+    const readStatus = JSON.parse(localStorage.getItem('readInvites') || '{}');
+    const hasUnread = invites.some(invite => !readStatus[invite.id]);
+    const inviteNavLink = document.getElementById('invitesNavLink');
+    if (!inviteNavLink) return;
+    if (hasUnread) {
+      inviteNavLink.classList.add('unread-indicator');
+    } else {
+      inviteNavLink.classList.remove('unread-indicator');
+    }
+  }
+
+  window.onload = async () => {
+    try {
+      username = await fetchUsername(userId);
+      document.getElementById('userGreeting').textContent = `你好！${username}`;
+      await fetchInvites();
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    const userId = sessionStorage.getItem("userId");
+    if (!userId) return;
+
+    try {
+      const res = await fetch(`/user/${encodeURIComponent(userId)}`);
+      if (!res.ok) throw new Error("获取用户信息失败");
+      const data = await res.json();
+      const role = data.role;
+      const nav = document.getElementById('sidebarNav');
+
+      if (role === 1) {
+        const lectureLink = document.createElement('a');
+        lectureLink.href = 'lecture_list.html';
+        lectureLink.textContent = '演讲';
+        nav.appendChild(lectureLink);
+      } else if (role === 2) {
+        const inviteLink = document.createElement('a');
+        inviteLink.href = 'invites.html';
+        inviteLink.textContent = '收到的邀请';
+        nav.appendChild(inviteLink);
+
+        const speakerLink = document.createElement('a');
+        speakerLink.href = 'lecture_speaker.html';
+        speakerLink.textContent = '我的演讲';
+        nav.appendChild(speakerLink);
+      } else {
+        const lectureLink = document.createElement('a');
+        lectureLink.href = 'lecture_user.html';
+        lectureLink.textContent = '演讲';
+        nav.appendChild(lectureLink);
+      }
+    } catch (err) {
+      console.error("加载导航失败：", err);
+    }
+  });
+</script>
+</body>
+
+
+
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>注册页面</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.9/lib/theme-chalk/index.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui@2.15.9/lib/index.js"></script>
+    <style>
+        /* 背景图案修饰 */
+        .header-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: url('https://via.placeholder.com/1500x150') no-repeat center center;
+            background-size: cover;
+            z-index: -1;
+        }
+
+        /* 页面主体 */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 50px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* 小星星和艺术字同一行 */
+        .header-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .star-icon {
+            font-size: 50px;
+            color: #FFD700;
+            margin-right: 10px;
+        }
+
+        .artistic-font {
+            font-size: 28px;
+            font-family: 'Brush Script MT', cursive;
+            color: #4CAF50;
+        }
+
+        /* 半隐藏的Logo */
+        .logo {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            opacity: 0.5;
+            z-index: 999;
+            font-size: 30px;
+            font-family: 'Brush Script MT', cursive;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 背景图案 -->
+    <div class="header-image"></div>
+
+    <div id="app" class="container">
+        <!-- 小星星和艺术字同一行 -->
+        <div class="header-row">
+            <div class="star-icon">★</div>
+            <div class="artistic-font">Eggssteam</div>
+        </div>
+
+        <h2>注册</h2>
+
+        <el-form ref="registerForm" :model="form" label-width="80px">
+            <el-form-item label="用户名" :rules="[{ required: true, message: '请输入用户名', trigger: 'blur' }]">
+                <el-input v-model="form.username" placeholder="请输入用户名"></el-input>
+            </el-form-item>
+
+            <el-form-item label="邮箱" :rules="[{ type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }]">
+                <el-input v-model="form.email" placeholder="请输入邮箱"></el-input>
+            </el-form-item>
+
+            <el-form-item label="密码" :rules="[{ required: true, message: '请输入密码', trigger: 'blur' }]">
+                <el-input type="password" v-model="form.password" placeholder="请输入密码"></el-input>
+            </el-form-item>
+
+            <el-form-item label="确认密码" :rules="[{ required: true, message: '请确认密码', trigger: 'blur' }]">
+                <el-input type="password" v-model="form.confirmPassword" placeholder="确认密码"></el-input>
+            </el-form-item>
+
+            <!-- 新增角色选择 -->
+            <el-form-item label="角色" :rules="[{ required: true, message: '请选择角色', trigger: 'change' }]">
+                <el-select v-model="form.role" placeholder="请选择角色">
+                    <el-option label="组织者" :value="1"></el-option>
+                    <el-option label="演讲者" :value="2"></el-option>
+                    <el-option label="听众" :value="3"></el-option>
+                </el-select>
+            </el-form-item>
+
+            <el-button type="success" size="small" @click="register">注册</el-button>
+        </el-form>
+
+        <p>已有账号？ <a href="/">点击登录</a></p>
+    </div>
+
+    <!-- Eggssteam Logo -->
+    <div class="logo">Eggssteam</div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data() {
+                return {
+                    form: {
+                        username: '',
+                        email: '',
+                        password: '',
+                        confirmPassword: '',
+                        role: null
+                    }
+                };
+            },
+            methods: {
+                validateForm() {
+                    let isValid = true;
+                    if (this.form.username.trim() === "") {
+                        this.showError("用户名不能为空");
+                        isValid = false;
+                    } else if (!this.isValidEmail(this.form.email)) {
+                        this.showError("邮箱格式不正确");
+                        isValid = false;
+                    } else if (this.form.password.length < 6) {
+                        this.showError("密码必须至少包含6个字符");
+                        isValid = false;
+                    } else if (this.form.password !== this.form.confirmPassword) {
+                        this.showError("密码不匹配");
+                        isValid = false;
+                    } else if (!this.form.role) {
+                        this.showError("请选择角色");
+                        isValid = false;
+                    }
+                    return isValid;
+                },
+                isValidEmail(email) {
+                    const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+                    return pattern.test(email);
+                },
+                showError(message) {
+                    this.$message.error(message);
+                },
+                async register() {
+                    if (!this.validateForm()) {
+                        return;
+                    }
+
+                    const response = await fetch("http://127.0.0.1:8000/user/register", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            username: this.form.username,
+                            email: this.form.email,
+                            password: this.form.password,
+                            role: this.form.role
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        this.$message.success('注册成功！');
+                        setTimeout(() => {
+                            window.location.href = "http://127.0.0.1:8000";
+                        }, 1500);
+                    } else {
+                        this.showError(data.detail || "注册失败");
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
