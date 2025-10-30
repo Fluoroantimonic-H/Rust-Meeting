@@ -209,6 +209,31 @@ async fn list_all(
 }
 
 // =============== 详情：按 ID ===============
+// async fn get_lecture(
+//     State(client): State<AppState>,
+//     Path(lecture_id): Path<String>,
+// ) -> Result<RespJson<serde_json::Value>, (StatusCode, String)> {
+//     let coll = lecture_collection(&client);
+//     let oid = ObjectId::parse_str(&lecture_id)
+//         .map_err(|_| (StatusCode::BAD_REQUEST, "无效的 lecture_id".into()))?;
+//     let doc = coll
+//         .find_one(doc! { "_id": oid }, None)
+//         .await
+//         .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "查询失败".into()))?
+//         .ok_or((StatusCode::NOT_FOUND, "Lecture not found".into()))?;
+
+//     let mut v: serde_json::Value = bson::from_document(doc)
+//         .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "序列化错误".into()))?;
+//     if let Some(obj) = v.as_object_mut() {
+//         // 使用真实 hex id
+//         let id_hex = obj
+//             .remove("_id")
+//             .and_then(|oid| match oid { serde_json::Value::String(s) => Some(s), other => Some(other.to_string()) })
+//             .unwrap_or(lecture_id);
+//         obj.insert("id".to_string(), serde_json::Value::String(id_hex));
+//     }
+//     Ok(RespJson(v))
+// }
 async fn get_lecture(
     State(client): State<AppState>,
     Path(lecture_id): Path<String>,
@@ -216,22 +241,24 @@ async fn get_lecture(
     let coll = lecture_collection(&client);
     let oid = ObjectId::parse_str(&lecture_id)
         .map_err(|_| (StatusCode::BAD_REQUEST, "无效的 lecture_id".into()))?;
+    
     let doc = coll
         .find_one(doc! { "_id": oid }, None)
         .await
         .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "查询失败".into()))?
         .ok_or((StatusCode::NOT_FOUND, "Lecture not found".into()))?;
 
+    // 正确提取 id 为字符串
+    let id_hex = oid.to_hex();
+
     let mut v: serde_json::Value = bson::from_document(doc)
         .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "序列化错误".into()))?;
+    
     if let Some(obj) = v.as_object_mut() {
-        // 使用真实 hex id
-        let id_hex = obj
-            .remove("_id")
-            .and_then(|oid| match oid { serde_json::Value::String(s) => Some(s), other => Some(other.to_string()) })
-            .unwrap_or(lecture_id);
-        obj.insert("id".to_string(), serde_json::Value::String(id_hex));
+        obj.remove("_id");  // 移除原始 _id
+        obj.insert("id".to_string(), serde_json::Value::String(id_hex)); // 插入字符串 id
     }
+    
     Ok(RespJson(v))
 }
 

@@ -280,9 +280,27 @@ function renderSection(status) {
     } else if (status === 1) {
       btns = `<button class="enter" onclick="onEnter('${targetLecture.id}')">进入</button>
               `;
+      // 1. 解析成对象
+      // let parsed = JSON.parse(targetLecture.id);
+      
+      
+      // // 2. 提取 $oid 的值
+      // let nid = parsed.$oid;
+
+      // console.log(targetLecture.id)
+      // console.log(nid);
+      // btns = `<button class="enter" onclick="onEnter('${nid}')">进入</button>
+      //         `;
     } else {
+      // 1. 解析成对象
+      // let parsed = JSON.parse(targetLecture.id);
+      
+      // // 2. 提取 $oid 的值
+      // let nid = parsed.$oid;
       btns = `<button class="view" onclick="onView('${targetLecture.id}')">查看</button>
               `;
+      // btns = `<button class="view" onclick="onView('${nid}')">查看</button>
+      //         `;
     }
 
     const statusLabel = status === 0 ? '未开始' : status === 1 ? '进行中' : '已结束';
@@ -458,7 +476,8 @@ function onEnd(id) {
 }
 
 function onEnter(id) {
-  console.log("fa")
+  // console.log(id)
+
   window.location.href = `http://127.0.0.1:8000/static/lecture-room-audience.html?lecture_id=${encodeURIComponent(id)}`;
 }
 
