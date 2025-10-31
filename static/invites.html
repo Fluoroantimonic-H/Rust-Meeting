@@ -288,7 +288,7 @@
 <body>
 <div class="layout">
   <header>
-    <div class="left">演讲系统</div>
+    <div class="left">会议系统</div>
     <div class="right">
       <div id="userGreeting">你好！用户</div>
       <button onclick="logout()" class="logout-btn">退出登录</button>
@@ -313,12 +313,12 @@
 <!-- 弹出框 -->
 <div class="modal" id="inviteModal">
   <div class="modal-box">
-    <h2 id="modalTitle">演讲标题</h2>
+    <h2 id="modalTitle">会议标题</h2>
     <p><strong>组织者：</strong><span id="modalOrganizer"></span></p>
     <p><strong>简介：</strong><span id="modalDescription"></span></p>
     <div class="modal-actions">
-      <button class="reject-btn" id="rejectBtn" onclick="updateInviteStatus(-1)">拒绝演讲</button>
-      <button class="accept-btn" id="acceptBtn" onclick="updateInviteStatus(1)">接受演讲</button>
+      <button class="reject-btn" id="rejectBtn" onclick="updateInviteStatus(-1)">拒绝会议</button>
+      <button class="accept-btn" id="acceptBtn" onclick="updateInviteStatus(1)">接受会议</button>
     </div>
   </div>
 </div>
@@ -353,7 +353,7 @@
 
   async function fetchLecture(lectureId) {
     const res = await fetch(`/lecture/${encodeURIComponent(lectureId)}`);
-    if (!res.ok) throw new Error('获取演讲详情失败');
+    if (!res.ok) throw new Error('获取会议详情失败');
     return await res.json();
   }
 
@@ -411,7 +411,7 @@
         ${checkboxHTML}
         <div class="invite-content" onclick="${deleteMode ? 'void(0)' : `showDetails('${invite.id}')`}">
           <div class="invite-title">${invite.title}</div>
-          <div class="invite-organizer">演讲者：${invite.organizer}</div>
+          <div class="invite-organizer">主持人：${invite.organizer}</div>
           <div class="invite-desc">${invite.desc}</div>
           <div class="invite-status">状态：${invite.status === 0 ? '待回应' : invite.status === 1 ? '已接受' : '已拒绝'}</div>
           <div class="invite-time">邀请时间：${invite.time}</div>
@@ -584,7 +584,7 @@
       if (role === 1) {
         const lectureLink = document.createElement('a');
         lectureLink.href = 'lecture_list.html';
-        lectureLink.textContent = '演讲';
+        lectureLink.textContent = '会议';
         nav.appendChild(lectureLink);
       } else if (role === 2) {
         const inviteLink = document.createElement('a');
@@ -594,12 +594,12 @@
 
         const speakerLink = document.createElement('a');
         speakerLink.href = 'lecture_speaker.html';
-        speakerLink.textContent = '我的演讲';
+        speakerLink.textContent = '我的会议';
         nav.appendChild(speakerLink);
       } else {
         const lectureLink = document.createElement('a');
         lectureLink.href = 'lecture_user.html';
-        lectureLink.textContent = '演讲';
+        lectureLink.textContent = '会议';
         nav.appendChild(lectureLink);
       }
     } catch (err) {

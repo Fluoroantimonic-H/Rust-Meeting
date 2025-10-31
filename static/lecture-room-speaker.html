@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>演讲室</title>
+  <title>会议室</title>
   <style>
     body {
       font-family: sans-serif;
@@ -512,18 +512,18 @@
 
 <div class="buttons">
   <button class="discussion-btn" onclick="openDiscussion()">讨论区</button>
-  <button id="manualQuestionButton" class="send-btn" onclick="openQuestionSelector()">选择题目</button>
+  <!-- <button id="manualQuestionButton" class="send-btn" onclick="openQuestionSelector()">选择题目</button> -->
 
 <!--  <button onclick="openAutoQuestionModal()" class="auto-question-btn">启动系统自动弹题</button>-->
-  <button onclick="toggleAutoQuestion()" id="autoQuestionBtn" class="auto-question-btn">
+  <!-- <button onclick="toggleAutoQuestion()" id="autoQuestionBtn" class="auto-question-btn">
     启动系统自动弹题
-  </button>
+  </button> -->
 
 </div>
 
 
 <!-- ============================== 右下角退出按钮 ============================== -->
-<button class="exit-btn" onclick="exitLecture()">退出演讲</button>
+<button class="exit-btn" onclick="exitLecture()">退出会议</button>
 
 <!--============================== 下面是讨论区 ===============================-->
 
@@ -585,7 +585,7 @@
     const lectureId = params.get("lecture_id");
 
     if (!userId || !lectureId) {
-      showTopMessage("请先登录并进入正确的演讲页！", "error");
+      showTopMessage("请先登录并进入正确的会议页！", "error");
       // window.location.href = "http://127.0.0.1:8000/static/lecture_speaker.html";
     }
 
@@ -595,34 +595,55 @@
   }
 
   async function addAudienceToLecture(lectureId, audienceId, isPresent = true) {
- const payload = {
-    lecture_id: lectureId,
-    audience_id: audienceId,
-    is_present: isPresent,
-    // joined_at 可选：可传也可不传
-    // joined_at: new Date().toISOString()
-  };
+    const payload = {
+        lecture_id: lectureId,
+        audience_id: audienceId,
+        is_present: isPresent,
+        // joined_at 可选：可传也可不传
+        // joined_at: new Date().toISOString()
+    };
 
-  try {
-    const res = await fetch("/LA/add", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
+    try {
+      // const res = await fetch("/LA/add", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json"
+      //   },
+      //   body: JSON.stringify(payload)
+      // });
 
-    const data = await res.json();
-    if (res.ok) {
-      console.log("加入成功：", data);
-    } else {
-      console.error("加入失败：", data);
-      alert("加入失败：" + data.detail || "服务器错误");
+      // const data = await res.json();
+      // if (res.ok) {
+      //   console.log("加入成功：", data);
+      // } else {
+      //   console.error("加入失败：", data);
+      //   alert("加入失败：" + data.detail || "服务器错误");
+      // }
+
+      const res = await fetch("/LA/update_is_present", {
+                method: "POST",  // 改成 POST
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    lecture_id: lectureId,
+                    audience_id: audienceId,
+                    is_present: isPresent
+                })
+            });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          console.log("更新成功：", data.message);
+        } else {
+          console.error("更新失败：", data.detail || "未知错误");
+          alert("更新失败：" + data.detail);
+        }
+    } catch (error) {
+      console.error("网络请求出错：", error);
+      alert("请求出错");
     }
-  } catch (error) {
-    console.error("网络请求出错：", error);
-    alert("请求出错");
-  }
   }
 
   const { userId, lectureId } = getUserAndLecture();
@@ -1037,7 +1058,7 @@
   // ============================== 下面是退出 ===============================
 
   async function exitLecture() {
-    if (confirm("确定要退出当前演讲吗？")) {
+    if (confirm("确定要退出当前会议吗？")) {
       try {
         // const res = await fetch(`/LA/update_is_present?lecture_id=${lectureId}&audience_id=${userId}&is_present=${false}`, {
         //   method: "PATCH"

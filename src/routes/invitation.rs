@@ -217,10 +217,10 @@ async fn delete_invitation_by_lid(
     let oid = ObjectId::parse_str(&lecture_id)
         .map_err(|_| (axum::http::StatusCode::BAD_REQUEST, "Invalid invitation_id format".into()))?;
     let result = coll
-        .delete_one(doc! { "lecture_id": oid }, None)
+        .delete_many(doc! { "lecture_id": oid }, None)
         .await
         .map_err(|_| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "删除失败".into()))?;
-    if result.deleted_count == 0 { return Err((axum::http::StatusCode::NOT_FOUND, "Invitation not found".into())); }
+    // if result.deleted_count == 0 { return Err((axum::http::StatusCode::NOT_FOUND, "Invitation not found".into())); }
     Ok(RespJson(serde_json::json!({"message": format!("Invitation which lecture_id is {} deleted successfully", lecture_id)})))
 }
 

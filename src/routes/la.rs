@@ -480,6 +480,21 @@ async fn delete_la(
     }))
 }
 
+async fn delete_la_by_lid(
+    State(client): State<AppState>,
+    Path(lecture_id): Path<String>,
+) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+    let coll = la_collection(&client);
+    let oid = ObjectId::parse_str(&lecture_id)
+        .map_err(|_| (axum::http::StatusCode::BAD_REQUEST, "Invalid lecture_id format".into()))?;
+    let result = coll
+        .delete_many(doc! { "lecture_id": oid }, None)
+        .await
+        .map_err(|_| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "删除失败".into()))?;
+    // if result.deleted_count == 0 { return Err((axum::http::StatusCode::NOT_FOUND, "Invitation not found".into())); }
+    Ok(Json(serde_json::json!({"message": format!("LA which lecture_id is {} deleted successfully", lecture_id)})))
+}
+
 async fn get_by_lecture(
     State(client): State<AppState>,
     query: Query<std::collections::HashMap<String, String>>,
@@ -573,6 +588,39 @@ async fn get_present_users(
 }
 
 
+// async fn update_is_present(
+//     State(client): State<AppState>,
+//     Json(payload): Json<UpdateIsPresent>,
+// ) -> Result<Json<LAResponse>, (StatusCode, String)> {
+//     let coll = la_collection(&client);
+
+//     let lecture_oid = ObjectId::parse_str(&payload.lecture_id)
+//         .map_err(|_| (StatusCode::BAD_REQUEST, "无效的 lecture_id".into()))?;
+//     let audience_oid = ObjectId::parse_str(&payload.audience_id)
+//         .map_err(|_| (StatusCode::BAD_REQUEST, "无效的 audience_id".into()))?;
+
+//     let result = coll.update_one(
+//         doc! {
+//             "lecture_id": lecture_oid,
+//             "audience_id": audience_oid,
+//         },
+//         doc! { "$set": { "is_present": payload.is_present } },
+//         None,
+//     ).await
+//         .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "更新失败".into()))?;
+
+//     if result.matched_count == 0 {
+//         return Err((StatusCode::NOT_FOUND, "记录未找到".into()));
+//     }
+
+//     Ok(Json(LAResponse {
+//         message: format!("is_present 已更新为 {}", payload.is_present),
+//         la_id: None,
+//         joined_at: None,
+//     }))
+// }
+use mongodb::options::UpdateOptions;
+
 async fn update_is_present(
     State(client): State<AppState>,
     Json(payload): Json<UpdateIsPresent>,
@@ -584,24 +632,43 @@ async fn update_is_present(
     let audience_oid = ObjectId::parse_str(&payload.audience_id)
         .map_err(|_| (StatusCode::BAD_REQUEST, "无效的 audience_id".into()))?;
 
+    let now = Utc::now().timestamp_millis();
+
+    let update_doc = doc! {
+        "$set": {
+            "is_present": payload.is_present,
+            "joined_at": now  // 即使是更新，也刷新 joined_at（可选）
+        },
+        "$setOnInsert": {
+            "lecture_id": lecture_oid,
+            "audience_id": audience_oid,
+        }
+    };
+
+    let options = UpdateOptions::builder().upsert(true).build();
+
     let result = coll.update_one(
         doc! {
             "lecture_id": lecture_oid,
             "audience_id": audience_oid,
         },
-        doc! { "$set": { "is_present": payload.is_present } },
-        None,
+        update_doc,
+        options,
     ).await
-        .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "更新失败".into()))?;
+        .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "操作失败".into()))?;
 
-    if result.matched_count == 0 {
-        return Err((StatusCode::NOT_FOUND, "记录未找到".into()));
-    }
+    let message = if result.matched_count > 0 {
+        "is_present 已更新".to_string()
+    } else if result.upserted_id.is_some() {
+        "新记录已创建".to_string()
+    } else {
+        "操作成功".to_string()
+    };
 
     Ok(Json(LAResponse {
-        message: format!("is_present 已更新为 {}", payload.is_present),
-        la_id: None,
-        joined_at: None,
+        message,
+        la_id: result.upserted_id.map(|id| id.as_object_id().unwrap().to_hex()),
+        joined_at: Some(now),
     }))
 }
 
@@ -672,4 +739,5 @@ pub fn router() -> Router<AppState> {
         .route("/update_is_present", post(update_is_present))
         .route("/create", post(create_la_entry))
         .route("/lectures_by_user/:user_id", get(get_lectures_by_user))
+        .route("/deletela/:lecture_id", delete(delete_la_by_lid))
 }
