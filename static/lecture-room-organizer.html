@@ -489,13 +489,13 @@ async function addAudienceToLecture(lectureId, audienceId, isPresent = true) {
   function startPollingDiscussions() {
     setInterval(() => {
       fetchDiscussions();
-    }, 2000); // 每 2 秒轮询
+    }, 500); // 每 0.5 秒轮询
   }
 
   function startFetchUsers() {
     setInterval(() => {
       updateLectureRoom();
-    }, 2000); // 每 2 秒轮询
+    }, 500); // 每 0.5 秒轮询
   }
 
   window.onload = function () {
