@@ -1,12 +1,10 @@
-
 use axum::{
     routing::{get, get_service},
     Router,
-    response::{IntoResponse, Redirect},
+    response::{Redirect},
     http::StatusCode,
 };
 use std::net::SocketAddr;
-use std::sync::Arc;
 use tower_http::{
     services::ServeDir,
     cors::{CorsLayer, Any},

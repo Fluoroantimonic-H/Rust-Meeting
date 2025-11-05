@@ -5,7 +5,7 @@ use axum::{
     Router,
 };
 use axum::response::Json as RespJson;
-use bson::{doc, oid::ObjectId, Document, DateTime as BsonDateTime};
+use bson::{doc, oid::ObjectId, DateTime as BsonDateTime};
 use chrono::Utc;
 use futures_util::TryStreamExt;
 use mongodb::Client;

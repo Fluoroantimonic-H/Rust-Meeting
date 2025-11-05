@@ -4,7 +4,7 @@ use axum::{
     Router,
 };
 use axum::response::Json as RespJson;
-use bson::{doc, oid::ObjectId, Document};
+use bson::{doc, oid::ObjectId};
 use mongodb::Client;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;

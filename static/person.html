@@ -247,7 +247,7 @@ nav.sidebar {
 <body>
 <div class="layout">
   <header>
-    <div class="left">会议系统</div>
+    <div class="left">讲座系统</div>
     <div class="right">
       <div id="usernameDisplay">你好！用户</div>
       <button onclick="logout()">退出登录</button>
@@ -257,7 +257,7 @@ nav.sidebar {
     <nav class="sidebar" id="sidebarNav">
       <a href="#" onclick="goToPersonal()">个人主页</a>
 <!--      <a href="invites.html">收到的邀请</a>-->
-<!--      <a href="lecture_list.html">会议</a>-->
+<!--      <a href="lecture_list.html">讲座</a>-->
 
     </nav>
     <div class="content" id="mainContent">
@@ -444,7 +444,7 @@ nav.sidebar {
         if (role === 1) {
           const lectureLink = document.createElement('a');
           lectureLink.href = 'lecture_list.html';
-          lectureLink.textContent = '会议';
+          lectureLink.textContent = '讲座';
           nav.appendChild(lectureLink);
         } else if (role === 2) {
           const inviteLink = document.createElement('a');
@@ -454,12 +454,12 @@ nav.sidebar {
 
           const speakerLink = document.createElement('a');
           speakerLink.href = 'lecture_speaker.html';
-          speakerLink.textContent = '我的会议';
+          speakerLink.textContent = '我的讲座';
           nav.appendChild(speakerLink);
         } else {
           const lectureLink = document.createElement('a');
           lectureLink.href = 'lecture_user.html';
-          lectureLink.textContent = '会议';
+          lectureLink.textContent = '讲座';
           nav.appendChild(lectureLink);
         }
       } catch (err) {

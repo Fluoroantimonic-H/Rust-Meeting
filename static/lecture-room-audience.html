@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>会议室</title>
+  <title>讲座室</title>
   <style>
     body {
       font-family: sans-serif;
@@ -573,7 +573,7 @@
 </div>
 
 <!-- ============================== 右下角退出按钮 ============================== -->
-<button class="exit-btn" onclick="exitLecture()">退出会议</button>
+<button class="exit-btn" onclick="exitLecture()">退出讲座</button>
 
 <!--============================== 下面是讨论区 ===============================-->
 
@@ -614,8 +614,8 @@
   <div class="feedback-content">
     <label><input type="checkbox" id="too_fast"> 讲得太快</label><br>
     <label><input type="checkbox" id="too_slow"> 讲得太慢</label><br>
-    <label><input type="checkbox" id="boring"> 会议内容太乏味</label><br>
-    <label><input type="checkbox" id="bad_question_quality"> 会议质量不好</label><br>
+    <label><input type="checkbox" id="boring"> 讲座内容太乏味</label><br>
+    <label><input type="checkbox" id="bad_question_quality"> 讲座质量不好</label><br>
     <textarea id="otherFeedback" placeholder="其他反馈..." rows="5" style="width: 355px"></textarea>
   </div>
   <div class="feedback-footer">
@@ -631,7 +631,7 @@
     const lectureId = params.get("lecture_id");
 
     if (!userId || !lectureId) {
-      showTopMessage("请先登录并进入正确的会议页！", "error");
+      showTopMessage("请先登录并进入正确的讲座页！", "error");
       // window.location.href = "http://127.0.0.1:8000/static/lecture_user.html";
     }
 
@@ -697,7 +697,6 @@
 
   window.onload = function () {
     startPollingDiscussions(); // 启动轮询
-    startFetchingQuestions();
     startFetchUsers();
   };
 
@@ -1216,7 +1215,7 @@
   // ============================== 下面是退出 ===============================
 
   function exitLecture() {
-    if (confirm("确定要退出当前会议吗？")) {
+    if (confirm("确定要退出当前讲座吗？")) {
       // 可根据你项目跳转主页或登录页
       addAudienceToLecture(lectureId, userId, false)
       window.location.href = "http://127.0.0.1:8000/static/lecture_user.html"; // 或其他你想跳转的页面

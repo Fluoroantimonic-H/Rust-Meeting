@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>会议室</title>
+  <title>讲座室</title>
   <style>
     body {
       font-family: sans-serif;
@@ -523,7 +523,7 @@
 
 
 <!-- ============================== 右下角退出按钮 ============================== -->
-<button class="exit-btn" onclick="exitLecture()">退出会议</button>
+<button class="exit-btn" onclick="exitLecture()">退出讲座</button>
 
 <!--============================== 下面是讨论区 ===============================-->
 
@@ -585,7 +585,7 @@
     const lectureId = params.get("lecture_id");
 
     if (!userId || !lectureId) {
-      showTopMessage("请先登录并进入正确的会议页！", "error");
+      showTopMessage("请先登录并进入正确的讲座页！", "error");
       // window.location.href = "http://127.0.0.1:8000/static/lecture_speaker.html";
     }
 
@@ -1058,7 +1058,7 @@
   // ============================== 下面是退出 ===============================
 
   async function exitLecture() {
-    if (confirm("确定要退出当前会议吗？")) {
+    if (confirm("确定要退出当前讲座吗？")) {
       try {
         // const res = await fetch(`/LA/update_is_present?lecture_id=${lectureId}&audience_id=${userId}&is_present=${false}`, {
         //   method: "PATCH"

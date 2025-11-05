@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>会议详情</title>
+    <title>讲座详情</title>
 </head>
 <body>
-    <h1>会议详情</h1>
+    <h1>讲座详情</h1>
     <div id="lecture-info">加载中...</div>
 
     <!-- 上传 PDF 部分 -->
@@ -23,12 +23,12 @@
         const lectureInfoDiv = document.getElementById("lecture-info");
 
         if (!lectureId) {
-            lectureInfoDiv.textContent = "无效的会议ID";
+            lectureInfoDiv.textContent = "无效的讲座ID";
         } else {
-            // 请求后端接口获取会议信息
+            // 请求后端接口获取讲座信息
             fetch(`/lecture/${lectureId}`)
                 .then(res => {
-                    if (!res.ok) throw new Error("会议未找到");
+                    if (!res.ok) throw new Error("讲座未找到");
                     return res.json();
                 })
                 .then(lecture => {
@@ -37,7 +37,7 @@
                         <p><strong>开始时间：</strong>${lecture.start_time}</p>
                         <p><strong>持续时间：</strong>${lecture.duration} 分钟</p>
                         <p><strong>简介：</strong>${lecture.description}</p>
-                        <p><strong>主持人ID：</strong>${lecture.speaker_id}</p>
+                        <p><strong>演讲者ID：</strong>${lecture.speaker_id}</p>
                         <p><strong>组织者ID：</strong>${lecture.organizer_id}</p>
                         <p><strong>状态：</strong>${lecture.status}</p>
                     `;

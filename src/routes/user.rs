@@ -11,7 +11,7 @@ use bson::{doc, oid::ObjectId, Document};
 use futures_util::stream::StreamExt;
 use mongodb::Client;
 use regex::Regex;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -37,13 +37,6 @@ struct UserLogin {
     password: String,
 }
 
-#[derive(Deserialize, Default)]
-struct UserUpdate {
-    username: Option<String>,
-    gender: Option<i32>,
-    age: Option<i32>,
-    motto: Option<String>,
-}
 
 // ==================== 工具函数 ====================
 
